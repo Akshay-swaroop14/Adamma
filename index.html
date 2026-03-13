@@ -6,6 +6,42 @@
 <title>Adamma Info Services – BGV Proposal</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,100..900;1,100..900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
+
+    #side-nav-left,
+#side-nav-right{
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  width:50px;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
+  color:var(--orange);
+  cursor:pointer;
+  z-index:200;
+  transition:all 0.3s;
+  border:1px solid rgba(255,107,0,0.3);
+  background:rgba(0,0,0,0.4);
+}
+
+#side-nav-left{
+  left:10px;
+  border-radius:0 6px 6px 0;
+}
+
+#side-nav-right{
+  right:10px;
+  border-radius:6px 0 0 6px;
+}
+
+#side-nav-left:hover,
+#side-nav-right:hover{
+  background:var(--orange);
+  color:#000;
+  box-shadow:0 0 20px var(--orange-glow);
+}
 :root {
   --orange: #FF6B00;
   --orange-light: #FF8C2A;
@@ -69,7 +105,7 @@ html, body {
 }
 .slide.active { opacity:1; pointer-events:all; transform:translateY(0); }
 .slide.exit-up { opacity:0; transform:translateY(-40px); }
-#nav {
+/* #nav {
   position:fixed; bottom:30px; left:50%;
   transform:translateX(-50%);
   display:flex; gap:10px; z-index:100; align-items:center;
@@ -92,7 +128,7 @@ html, body {
 }
 #nav-prev:hover, #nav-next:hover {
   background: var(--orange); color:#000; box-shadow: 0 0 20px var(--orange-glow);
-}
+} */
 #slide-counter {
   position:fixed; top:24px; right:32px;
   font-family:'Share Tech Mono', monospace;
@@ -701,11 +737,14 @@ html, body {
 
 </div>
 
-<div id="nav">
+<!-- <div id="nav">
   <button id="nav-prev" onclick="prevSlide()">‹</button>
   <div id="dots"></div>
   <button id="nav-next" onclick="nextSlide()">›</button>
-</div>
+</div> -->
+
+<div id="side-nav-left" onclick="prevSlide()">‹</div>
+<div id="side-nav-right" onclick="nextSlide()">›</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
@@ -732,9 +771,29 @@ document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
   curRing.style.left = rx+'px'; curRing.style.top = ry+'px';
   requestAnimationFrame(moveCursor);
 })();
-document.querySelectorAll('button,a,.client-badge,.svc-tag,.card,.why-row,.hero-badge').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2)';curRing.style.transform='translate(-50%,-50%) scale(1.5)';});
-  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';curRing.style.transform='translate(-50%,-50%) scale(1)';});
+// document.querySelectorAll('button,a,.client-badge,.svc-tag,.card,.why-row,.hero-badge').forEach(el=>{
+//   el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2)';curRing.style.transform='translate(-50%,-50%) scale(1.5)';});
+//   el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';curRing.style.transform='translate(-50%,-50%) scale(1)';});
+// });
+
+
+
+let startX = 0;
+
+document.addEventListener('touchstart',e=>{
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener('touchend',e=>{
+  const diff = e.changedTouches[0].clientX - startX;
+
+  if(Math.abs(diff) > 60){
+    if(diff > 0){
+      prevSlide(); // left to right
+    }else{
+      nextSlide(); // right to left
+    }
+  }
 });
 
 (function drawCircuit(){
@@ -793,16 +852,16 @@ document.querySelectorAll('button,a,.client-badge,.svc-tag,.card,.why-row,.hero-
   window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
 })();
 
-function buildDots(){
-  const d=document.getElementById('dots'); d.innerHTML='';
-  for(let i=0;i<total;i++){
-    const dot=document.createElement('div');
-    dot.className='nav-dot'+(i===0?' active':'');
-    dot.onclick=()=>goTo(i);
-    d.appendChild(dot);
-  }
-}
-buildDots();
+// function buildDots(){
+//   const d=document.getElementById('dots'); d.innerHTML='';
+//   for(let i=0;i<total;i++){
+//     const dot=document.createElement('div');
+//     dot.className='nav-dot'+(i===0?' active':'');
+//     dot.onclick=()=>goTo(i);
+//     d.appendChild(dot);
+//   }
+// }
+// buildDots();
 
 function goTo(idx){
   if(idx===current||animating) return;
@@ -834,6 +893,24 @@ document.addEventListener('touchend',e=>{
   if(Math.abs(dx)>50){dx<0?nextSlide():prevSlide();}
 });
 
+
+
+document.addEventListener('wheel', function(e){
+
+  if(Math.abs(e.deltaX) > Math.abs(e.deltaY)){
+
+    if(e.deltaX > 40){
+      nextSlide(); // swipe right -> next
+    }
+
+    if(e.deltaX < -40){
+      prevSlide(); // swipe left -> previous
+    }
+
+  }
+
+},{passive:true});
+
 function animateRings(){
   const rings=[
     {id:'ring1',pct:99.61},{id:'ring2',pct:98.06},
@@ -860,7 +937,7 @@ function buildChart(){
       datasets:[
         {label:'BGVs Completed (×1000)',data:[3900,20805,37906,59951,172837,210485,244768,118270,62651,82752,214296,187837,223786],
          backgroundColor:'rgba(255,107,0,0.7)',borderColor:'#FF6B00',borderWidth:1,borderRadius:2},
-        {label:'Final TAT %',data:[97,97.2,97.5,97.8,98,97.5,98.1,98.06,98.3,98.5,97.8,98.1,97.9,98.7],
+        {label:'Final TAT %',data:[97,97.2,97.5,97.8,98,97.5,98.1,98.06,98.3,98.5,97.8,98.1,99,98.7],
          type:'line',borderColor:'#FF8C2A',pointBackgroundColor:'#FF6B00',
          backgroundColor:'rgba(255,107,0,0.1)',fill:true,tension:0.4,yAxisID:'y2'}
       ]
